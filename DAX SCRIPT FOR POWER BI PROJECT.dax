@@ -1,0 +1,76 @@
+﻿avg revQTY = AVERAGE(sales[RevenueQty])
+
+avg_unitprice = AVERAGE(sales[UnitPrice]) 
+
+custwithorderQTY = DISTINCTCOUNT(Customers[CustomerSK])
+
+order_Qty = DISTINCTCOUNT(orderlines[OrderBK])
+
+orderAvg = [totrev]/[order_Qty]
+
+ProductPerCust = [sumofrevenueQTY]/ [custwithorderQTY]
+
+ProductQTY = DISTINCTCOUNT(Products[ProductName])
+
+ytd = TOTALYTD(sales[totrev],'Date'[date])
+
+qtd = TOTALQTD(sales[totrev],'Date'[date])
+
+sameperiodlastyear = CALCULATE(sum(sales[Revenue]),SAMEPERIODLASTYEAR('Date'[date]))
+
+shareofReturns = -[sum of returns] / [totrev without returns]*100
+
+top 2 customers = CALCULATE(sales[totrev], TOPN(2, all(Customers[CustomerName]) ,sales[totrev], DESC), VALUES(Customers[CustomerName]))
+
+top 5 customers = CALCULATE(sales[totrev], TOPN(5, all(Customers[CustomerName]) ,sales[totrev], DESC), VALUES(Customers[CustomerName]))
+
+Total Rev (Fillter Not Affecting)  2 = CALCULATE(SUM(sales[Revenue]), ALL(Products[DivisionName]))
+
+total sale forecast = sales[totrev] * 'pct sales forecast'[Parameter Value]
+
+ParameterDivision = GENERATESERIES(-1, 1, 0.1)
+
+growth = DIVIDE(sales[totrev] ,[sameperiodlastyear],0)
+
+
+--KPI-Goal 15% increase
+
+VALUE-
+
+Goal 15% increase = 
+var same_period_last_year = CALCULATE(sum(sales[Revenue]),SAMEPERIODLASTYEAR('Date'[date]))
+var Fifteen_precent_increase =  same_period_last_year * 1.15
+RETURN
+Fifteen_precent_increase
+
+GOAL-
+var same_period_last_year = CALCULATE(sum(sales[Revenue]),SAMEPERIODLASTYEAR('Date'[date]))
+VAR Target = same_period_last_year *1.15
+VAR Halfoftarget = Target / 2
+RETURN
+    SWITCH(TRUE,
+        ( [totrev] >= Target ), 1,
+        
+        AND([totrev]>= Halfoftarget, [totrev]< Target), 0,
+        
+        -1
+        
+    )
+
+--KPI- SUM OF RETURNS
+VALUE-
+SoRforKPI = -[sum of returns] / [totrev without returns]*100
+
+GOAL-
+VAR target = 3.42
+VAR halfofTarget = target * 1.1
+RETURN
+SWITCH(
+    TRUE,
+    [SoRforKPI] <= target, 1,
+    
+AND ([SoRforKPI]<= halfofTarget, [SoRforKPI] > target), 0,
+
+-1
+)
+
